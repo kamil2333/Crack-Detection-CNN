@@ -80,6 +80,39 @@ def plot_history(history):
     plt.savefig('wykres_uczenia.png')
     plt.show()
 
+def evaluate_model(model, test_ds):
+    print("\nOcena na zbiorze testowym: ")
+    loss, accuracy = model.evaluate(test_ds)
+    print(f"Skuteczność na danych testowych: {accuracy * 100:.2f}%")
+
+    # Zbieranie etykiet (prawdziwych i przewidzianych przez model)
+    y_true =[]
+    y_pred_probs =[]
+
+    for images, labels in test_ds:
+        preds = model.predict(images, verbose=0)
+        y_true.extend(labels.numpy())
+        y_pred_probs.extend(preds)
+
+    y_true = np.array(y_true)
+    y_pred = (np.array(y_pred_probs) > 0.5).astype(int) # Próg 0.5 dla klasyfikacji
+
+    # Raport klasyfikacji
+    print("\nRaport Klasyfikacji:")
+    print(classification_report(y_true, y_pred, target_names=['Brak pęknięcia (Negative)', 'Pęknięcie (Positive)']))
+
+    # Rysowanie Macierzy Pomyłek (Confusion Matrix)
+    cm = confusion_matrix(y_true, y_pred)
+    plt.figure(figsize=(6, 5))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
+                xticklabels=['Brak pęknięcia', 'Pęknięcie'],
+                yticklabels=['Brak pęknięcia', 'Pęknięcie'])
+    plt.title('Macierz Pomyłek (Confusion Matrix)')
+    plt.ylabel('Prawdziwa etykieta')
+    plt.xlabel('Przewidziana etykieta')
+    plt.savefig('macierz_pomylek.png')
+    plt.show()
+
 def main():
     train_ds, val_ds, test_ds = load_and_split_data()
 
@@ -99,6 +132,7 @@ def main():
 
     model.save('crack_detection.h5')
     plot_history(history)
+    evaluate_model(model, test_ds)
 
 if __name__ == "__main__":
     main()
