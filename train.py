@@ -39,10 +39,6 @@ def load_and_split_data():
     return train_ds, val_ds, test_ds
 
 
-def main():
-    train_ds, val_ds, test_ds = load_and_split_data()
-    print("Dane załadowane")
-
 def build_model():
     model = models.Sequential([
         layers.Rescaling(1./255, input_shape=(IMG_HEIGHT, IMG_WIDTH, 3)),
@@ -59,6 +55,26 @@ def build_model():
     ])
     model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
     return model
+
+
+def main():
+    train_ds, val_ds, test_ds = load_and_split_data()
+
+
+    AUTOTUNE = tf.data.AUTOTUNE
+    train_ds = train_ds.cache().shuffle(1000).prefetch(buffer_size=AUTOTUNE)
+    val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
+
+    model = build_model()
+
+    print("Starting training")
+    history = model.fit(
+        train_ds,
+        validation_data=val_ds,
+        epochs=10
+    )
+
+    model.save('crack_detection.h5')
 
 if __name__ == "__main__":
     main()
