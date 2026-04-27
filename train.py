@@ -57,6 +57,29 @@ def build_model():
     return model
 
 
+def plot_history(history):
+    acc = history.history['accuracy']
+    val_acc = history.history['val_accuracy']
+    loss = history.history['loss']
+    val_loss = history.history['val_loss']
+    epochs_range = range(len(acc))
+
+    plt.figure(figsize=(12, 4))
+    plt.subplot(1, 2, 1)
+    plt.plot(epochs_range, acc, label='Trening')
+    plt.plot(epochs_range, val_acc, label='Walidacja')
+    plt.legend(loc='lower right')
+    plt.title('Dokładność')
+
+    plt.subplot(1, 2, 2)
+    plt.plot(epochs_range, loss, label='Trening')
+    plt.plot(epochs_range, val_loss, label='Walidacja')
+    plt.legend(loc='upper right')
+    plt.title('Strata')
+
+    plt.savefig('wykres_uczenia.png')
+    plt.show()
+
 def main():
     train_ds, val_ds, test_ds = load_and_split_data()
 
@@ -75,6 +98,7 @@ def main():
     )
 
     model.save('crack_detection.h5')
+    plot_history(history)
 
 if __name__ == "__main__":
     main()
